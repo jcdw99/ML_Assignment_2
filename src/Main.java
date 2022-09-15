@@ -1,19 +1,19 @@
 public class Main {
     public static void main(String[] args) {
-        int[] sizes = {2, 5, 5, 2};
+        int[] sizes = {2, 5, 5, 5, 2};
         Visualize2D v = new Visualize2D(800, 800, 2, 0, 2);
         NeuralNetwork net = new NeuralNetwork(sizes);
-        DataPoint[] points = Loader.loadPointsFromFile("../data/circle.csv", 2);
-        for (int j = 0; j < 300000; j++) {
+        DataPoint[] points = Loader.loadPointsFromFile("../data/circlesect.csv", 2);
+        for (int j = 0; j < 150000; j++) {
             int batchSize = 30;
             for (int i = 0; i < points.length / batchSize; i++) {
                 DataPoint[] batch = getRandomBatch(points, batchSize);
                 net.BackProp(batch, 0.1);
-                System.out.println(net.Cost(points));
             }
             if (j % 3000 == 0) {
                 v.draw(net);
                 v.scatterPoints(points, 5);
+                v.addError(net.Cost(points) + "");
                 StdDraw.pause(500);
                 StdDraw.clear();
             }
@@ -21,8 +21,7 @@ public class Main {
         }
         System.out.println("done and trained");
         Score(net, points);
-
-        // net.saveNet("../nets/BigNet.net");
+        net.saveNet("../nets/BigNet2Circles.net");
 
         // NeuralNetwork net = NeuralNetwork.fromSave("../nets/Net1.net");
         // DataPoint[] points = Loader.loadPointsFromFile("../data/simple.csv", 2);

@@ -90,10 +90,15 @@ public class Visualize2D {
             if (points[i].expectedOutputVector[1] == 1)
                 StdDraw.setPenColor(StdDraw.RED);
             else 
-                StdDraw.setPenColor(StdDraw.GREEN);
+                StdDraw.setPenColor(23,125,23);
             StdDraw.filledCircle((int)(canvasWidth * xProp), (int)(canvasHeight * yProp), dotRadius);
         }
         StdDraw.show();
+    }
+
+    public void addError(String error) {
+        StdDraw.enableDoubleBuffering();
+        StdDraw.text((int) .1 * this.canvasWidth, (int) .9 * this.canvasHeight, error);
     }
 
 }
