@@ -1,3 +1,5 @@
+import java.awt.Color;
+
 public class Visualize2D {
 
     int canvasWidth;
@@ -38,67 +40,61 @@ public class Visualize2D {
     }
 
 
-    public void draw(NeuralNetwork net) {
+    public void draw(NeuralNetwork net, int classes) {
         int xPixels = this.canvasHeight / this.pixSize;
         int yPixels = this.canvasWidth / this.pixSize;
+        
         double intervalWidth = ub - lb;
         double stepSizeX = intervalWidth / xPixels;
         double stepSizeY = intervalWidth / yPixels;
         double floatX = lb;
         double floatY = lb;
+
+        Color[] colors = {new Color(205, 34, 44), new Color(34, 205, 44), new Color(205, 205, 55), new Color(205, 155, 0) ,new Color(205, 0, 205), new Color(78, 173, 218), new Color(55,55,55), new Color(200, 125, 125)};
+
         for (int i = 0; i < xPixels; i ++) {
             for (int j = 0; j < yPixels; j ++) {
                 double[] input = {floatY, floatX};
-                if (net.Classify(input) == 0)
-                    StdDraw.setPenColor(144, 238, 144);
-                else
-                    StdDraw.setPenColor(205, 92, 92);
+                int targetClass = net.Classify(input);
+                StdDraw.setPenColor(colors[targetClass]);
                 StdDraw.filledSquare(i * pixSize + pixSize / 2, j * pixSize + pixSize/2, pixSize/2);
                 floatX += stepSizeX;
             }
             floatX = lb;
             floatY += stepSizeY;
-
-            
         }
         StdDraw.disableDoubleBuffering();
         StdDraw.show();
     }
 
-    public void scatterPoints(double[] x, double[] y, boolean type, int dotRadius) {
-        StdDraw.setPenColor(StdDraw.BLACK);
-        StdDraw.enableDoubleBuffering();
-        double interval = ub - lb;
-        for (int i = 0; i < x.length; i++) {
-            double xObs = x[i];
-            double yObs = y[i];
-            double xProp = (xObs - lb) / interval;
-            double yProp = (yObs - lb) / interval;
-            StdDraw.filledCircle((int)(canvasWidth * xProp), (int)(canvasHeight * yProp), 3);
-        }
-        StdDraw.show();
-    }
 
     public void scatterPoints(DataPoint[] points, int dotRadius) {
         StdDraw.setPenColor(StdDraw.BLACK);
         StdDraw.enableDoubleBuffering();
         double interval = ub - lb;
+        Color[] colors = {StdDraw.RED, StdDraw.GREEN, StdDraw.YELLOW, StdDraw.ORANGE, StdDraw.MAGENTA, StdDraw.BOOK_LIGHT_BLUE, StdDraw.GRAY, StdDraw.PINK};
         for (int i = 0; i < points.length; i++) {
             double[] xy = points[i].inputVector;
             double xProp = (xy[0] - lb) / interval;
             double yProp = (xy[1] - lb) / interval;
-            if (points[i].expectedOutputVector[1] == 1)
-                StdDraw.setPenColor(StdDraw.RED);
-            else 
-                StdDraw.setPenColor(23,125,23);
+            StdDraw.setPenColor(colors[points[i].targetClass]);
             StdDraw.filledCircle((int)(canvasWidth * xProp), (int)(canvasHeight * yProp), dotRadius);
         }
         StdDraw.show();
     }
 
-    public void addError(String error) {
-        StdDraw.enableDoubleBuffering();
-        StdDraw.text((int) .1 * this.canvasWidth, (int) .9 * this.canvasHeight, error);
+    public void addError(String error, String epoch, String acc) {
+        StdDraw.enableDoubleBuffering();        
+        StdDraw.setPenColor(StdDraw.WHITE);
+        StdDraw.filledRectangle((int) (.07 * this.canvasWidth), (int) (.965 * this.canvasHeight), 45, 15);
+        StdDraw.filledRectangle((int) (.07 * this.canvasWidth), (int) (.915 * this.canvasHeight), 45, 15);
+        StdDraw.filledRectangle((int) (.07 * this.canvasWidth), (int) (.865 * this.canvasHeight), 45, 15);
+
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.text((int) (.07 * this.canvasWidth), (int) (.965 * this.canvasHeight), error.substring(0, 6));
+        StdDraw.text((int) (.07 * this.canvasWidth), (int) (.915 * this.canvasHeight), epoch);
+        StdDraw.text((int) (.07 * this.canvasWidth), (int) (.865 * this.canvasHeight), acc);
+        StdDraw.show();
     }
 
 }

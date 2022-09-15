@@ -3,7 +3,7 @@ import java.util.Scanner;
 import java.util.ArrayList;
 public class Loader {
     
-    public static DataPoint[] loadPointsFromFile(String filePath, int inputVecSize) {
+    public static DataPoint[] loadPointsFromFile(String filePath, int inputVecSize, int classes) {
         try {
             Scanner sc = new Scanner(new File(filePath));
             sc.useDelimiter(",");
@@ -14,12 +14,12 @@ public class Loader {
                     String val = sc.next().replaceAll(" ", "");
                     inputVec[i] = Double.parseDouble(val);
                 }
-                int targetClass = Integer.parseInt(sc.next().replaceAll(" ", ""));
-                double[] outputVector = new double[inputVecSize];
+                int targetClass = Integer.parseInt(sc.next().replaceAll(" ", "").replaceAll("\n", ""));
+                double[] outputVector = new double[classes];
                 for (int i = 0; i < outputVector.length; i++) {
                     outputVector[i] = (i == targetClass) ? 1.0:0.0;
                 }
-                list.add(new DataPoint(inputVec, outputVector));
+                list.add(new DataPoint(inputVec, outputVector, targetClass));
             }
             return list.toArray(new DataPoint[list.size()]);
         } catch (Exception e) {
