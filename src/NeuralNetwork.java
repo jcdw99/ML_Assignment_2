@@ -1,4 +1,14 @@
-public class NeuralNetwork {
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+public class NeuralNetwork implements Serializable {
+
+    private static final long serialVersionUID = 6529685098267757690L;
+
     // collection of layers (not including the input layer)
     Layer[] layers;
 
@@ -8,6 +18,22 @@ public class NeuralNetwork {
         for (int i = 0; i < this.layers.length; i++) {
             this.layers[i] = new Layer(sizes[i], sizes[i + 1]);
         }
+        // this.layers[0] = new Layer(1, sizes[0]);
+    }
+
+    public static NeuralNetwork fromSave(String savePath) {
+        FileInputStream fileInputStream;
+        ObjectInputStream objectInputStream;
+        try {
+            fileInputStream = new FileInputStream(savePath);
+            objectInputStream = new ObjectInputStream(fileInputStream);
+            NeuralNetwork net = (NeuralNetwork) objectInputStream.readObject();
+            objectInputStream.close();
+            return net;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -29,7 +55,7 @@ public class NeuralNetwork {
         this.layers[layers.length - 1].backward(this.layers[layers.length-2].getActivations(), d.expectedOutputVector);
         // call backprop on hidden layers
         for (int i = this.layers.length-2; i > 0; i--) {
-            double[][] weightsMat = new double[this.layers[i].neurons.length][this.layers[i+1].neurons[0].weights.length];
+            double[][] weightsMat = new double[this.layers[i].neurons.length][this.layers[i+1].neurons.length];
             for (int j = 0; j < weightsMat.length; j++) {
                 for (int k = 0; k < weightsMat[j].length; k++) {
                     weightsMat[j][k] = this.layers[i+1].neurons[k].weights[j];
@@ -97,6 +123,22 @@ public class NeuralNetwork {
             }
         }
         return maxIndex;
+    }
+
+
+    public void saveNet(String netName) {
+        FileOutputStream fileOutputStream;
+        ObjectOutputStream objectOutputStream;
+        try {
+            fileOutputStream = new FileOutputStream(netName);
+            objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(this);
+            objectOutputStream.flush();
+            objectOutputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

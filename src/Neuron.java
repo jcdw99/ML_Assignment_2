@@ -1,4 +1,9 @@
-public class Neuron {
+import java.io.Serializable;
+
+public class Neuron implements Serializable{
+
+    private static final long serialVersionUID = 6529685098267757690L;
+
     double bias;
     double[] weights;
     double activation;

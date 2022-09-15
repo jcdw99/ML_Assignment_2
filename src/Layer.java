@@ -1,4 +1,9 @@
-public class Layer {
+import java.io.Serializable;
+
+public class Layer implements Serializable {
+
+    private static final long serialVersionUID = 6529685098267757690L;
+
     // number of nodes feeding into this layer.
     int numNodesIn;
     // number of nodes in this layer
@@ -11,9 +16,10 @@ public class Layer {
         this.numNodesOut = nodesOut;
         // initialize array of neurons
         neurons = new Neuron[nodesOut];
-        for (int i = 0; i < neurons.length; i++) {
-            neurons[i] = new Neuron(nodesIn);
-        }
+        if (numNodesIn > 0)
+            for (int i = 0; i < neurons.length; i++) {
+                neurons[i] = new Neuron(nodesIn);
+            }
     }
 
     /**
