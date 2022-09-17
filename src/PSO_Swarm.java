@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Random;
 
 public class PSO_Swarm {
@@ -116,9 +117,11 @@ public class PSO_Swarm {
      */
     public void doUpdate(DataPoint[] points) {
         // for each particle, do velocity and position update
+        double[][] a = calculateRepulsionForces();
+
         for (int i = 0; i < particles.length; i++) {
             particles[i].evaluateParticle(points);
-            particles[i].updateVel();
+            particles[i].updateVel(a[i]);
             particles[i].updatePos();
         }
         // find the new gBest, and make each particle reflect this value
@@ -127,6 +130,45 @@ public class PSO_Swarm {
         } else {      
             setGBest(findGBest());
         }
+    }
+
+    public double[][] calculateRepulsionForces() {
+        double[][] a = new double[particles.length][particles[0].pBestVec.length];
+        for (double[] r: a) {
+            Arrays.fill(r, 0);
+        }
+
+        if (particles[0].charge == 0) {
+            return a;
+        }
+
+        for (int i = 0; i < particles.length; i++) {
+            for (int l = 0; l < particles.length; l++) {
+                if (i == l) {
+                    continue;
+                }
+
+                double norm = 0;
+                for (int j = 0; j < particles[i].position.length; j++) {
+                    norm += Math.abs(particles[i].position[j] - particles[l].position[j]);
+                }
+
+                if (params[Driver.coreRadius] <= norm && norm <= params[Driver.perceptionRadius]) {
+                    for (int j = 0; j < particles[i].position.length; j++) {
+                        a[i][j] = ((particles[i].charge * particles[l].charge) / Math.pow(norm,3))*
+                                (particles[i].position[j] - particles[l].position[j]);
+                    }
+                } else if (norm < params[Driver.coreRadius]) {
+                    for (int j = 0; j < particles[i].position.length; j++) {
+                        a[i][j] = ((particles[i].charge * particles[l].charge) *
+                                (particles[i].position[j] - particles[l].position[j])) /
+                                (params[Driver.coreRadius] * params[Driver.coreRadius] * norm);
+                    }
+                }
+            }
+        }
+
+        return a;
     }
 
     public String printVector(double[] x) {

@@ -11,14 +11,6 @@ class PSO_Particle {
         charged
     }
 
-    private int w = 0;
-    private int c1 = 1;
-    private int c2 = 2;
-    private int percentCharged = 3;
-    private int radius = 4;
-    private int batchSize = 5;
-    private int weightDecay = 6;
-
     public int[] NNSize;
     public double[] position;
     public double[] pBestVec;
@@ -27,6 +19,7 @@ class PSO_Particle {
     public double gBest;
     public double[] velocity;
     private double[] params;
+    double charge;
     public int DIM;
     boolean nnmode = true;
     ParticleType type = ParticleType.inertia;
@@ -75,12 +68,14 @@ class PSO_Particle {
      * 
      * Assigns the updated velocity to this particle's velocity
      */
-    public void updateVel() {
+    public void updateVel(double[] a) {
         for (int i = 0; i < this.velocity.length; i++) {
             if (type == ParticleType.inertia) {
-                this.velocity[i] = params[w] * this.velocity[i] +
-                        params[c1] * Math.random() * (this.pBestVec[i] - this.position[i]) +
-                        params[c2] * Math.random() * (this.gBestVec[i] - this.position[i]);
+                this.velocity[i] =
+                        params[Driver.w] * this.velocity[i] +
+                        params[Driver.c1] * Math.random() * (this.pBestVec[i] - this.position[i]) +
+                        params[Driver.c2] * Math.random() * (this.gBestVec[i] - this.position[i]) +
+                        a[i];
             }
         }
     }
@@ -109,7 +104,7 @@ class PSO_Particle {
         } else if (type == ParticleType.quantum) {
             for (int i = 0; i < this.velocity.length; i++) {
                 this.position[i] = gBestVec[i] +
-                        (rand.nextGaussian() * params[radius]);
+                        (rand.nextGaussian() * params[Driver.radius]);
             }
         }
     }
@@ -120,8 +115,8 @@ class PSO_Particle {
      */  
     public double evaluateParticle(DataPoint[] points) {
         NeuralNetwork net = new NeuralNetwork(NNSize, position);
-        double evalPos = net.Cost(Driver.getRandomBatch(points, (int)params[batchSize]),
-                params[weightDecay]);
+        double evalPos = net.Cost(Driver.getRandomBatch(points, (int)params[Driver.batchSize]),
+                params[Driver.weightDecay]);
 
         if (evalPos < this.pBest) {
             this.pBest = evalPos;
