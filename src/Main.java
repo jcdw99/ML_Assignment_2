@@ -1,7 +1,5 @@
 public class Main {
     public static void main(String[] args) {
-
-        Driver.do3Trivial();
-       
+        Driver.dox1SumSwarm();
     }
 }

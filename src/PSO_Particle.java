@@ -128,7 +128,6 @@ class PSO_Particle {
      * Evaluate the quality of the provided vector with respect to the objective function being minimized
      * @param vec
      * @return
-     * @throws Exception
      */
     public double evaluateVec(double[] vec) {
         NeuralNetwork n = new NeuralNetwork(this.NNSize, vec);

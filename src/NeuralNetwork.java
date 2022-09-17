@@ -175,7 +175,7 @@ public class NeuralNetwork implements Serializable {
         for (int i = 0; i < outputs.length; i++) {
             cost += (outputs[i] - target[i]) * (outputs[i] - target[i]);
         }
-        return cost * weightTerm();
+        return cost;
     }
 
     /**

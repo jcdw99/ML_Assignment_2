@@ -24,7 +24,7 @@ public class PSO_Swarm {
         this.NNSize = NNSize;
 
         // set control parameters
-        double[] params = {0.7, 2, 1.4};
+        double[] params = {0.7, 1.4, 1.4};
         // initialize swarm structure
         particles = new PSO_Particle[size];
         for (int i = 0; i < size; i++) {
@@ -105,6 +105,7 @@ public class PSO_Swarm {
             System.out.println("converged");
             System.exit(0);
         }
+        System.out.println(diversity());
     }
 
     public String printVector(double[] x) {
