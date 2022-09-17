@@ -126,27 +126,30 @@ public class NeuralNetwork implements Serializable {
         // run the input through the network to set nodevalues and activations 
         Forward(d.inputVector);
         // call backprop on final (output) layer
-        this.layers[layers.length - 1].backward(this.layers[layers.length-2].getActivations(), d.expectedOutputVector);
+        this.layers[layers.length - 1].backward(this.layers[layers.length-2].getActivations(),
+                d.expectedOutputVector);
         // call backprop on hidden layers
         for (int i = this.layers.length-2; i > 0; i--) {
-            double[][] weightsMat = new double[this.layers[i].neurons.length][this.layers[i+1].neurons.length];
+            double[][] weightsMat =
+                    new double[this.layers[i].neurons.length][this.layers[i+1].neurons.length];
             for (int j = 0; j < weightsMat.length; j++) {
                 for (int k = 0; k < weightsMat[j].length; k++) {
                     weightsMat[j][k] = this.layers[i+1].neurons[k].weights[j];
                 }
             }
-            this.layers[i].backwardHidden(weightsMat, this.layers[i-1].getActivations(), this.layers[i+1].getNodeVals());
+            this.layers[i].backwardHidden(weightsMat, this.layers[i-1].getActivations(),
+                    this.layers[i+1].getNodeVals());
         }
     }
 
 
-    public void BackProp(DataPoint[] trainingBatch, double learnRate) {
+    public void BackProp(DataPoint[] trainingBatch, double learnRate, double weightDecay) {
         for (DataPoint d: trainingBatch)
             BackProp(d);
 
         //apply all gradients
         for (Layer l: this.layers)
-            l.applyGradients(learnRate / trainingBatch.length);
+            l.applyGradients(learnRate / trainingBatch.length, weightDecay);
 
         //reset all gradients
         for (Layer l: this.layers)
@@ -158,7 +161,7 @@ public class NeuralNetwork implements Serializable {
      * @param d
      * @return
      */
-    public double Cost(DataPoint d) {
+    public double Cost(DataPoint d, double weightDecay) {
         double[] outputs = Forward(d.inputVector);
         double[] target = d.expectedOutputVector;
         double cost = 0;
@@ -168,19 +171,19 @@ public class NeuralNetwork implements Serializable {
         }
         // mean square error
         cost /= outputs.length;
-        cost += (cost + weightTerm());
+        cost += (cost + weightTerm(weightDecay));
         return cost;
     }
 
 
-    public double weightTerm() {
+    public double weightTerm(double weightDecay) {
         double weightSum = 0;
         double[] weights = this.toConfigVector();
         int weightCount = weights.length - (this.neuronCount - this.inputSize);
         for (int i = 0; i < weightCount; i++) {
             weightSum += (weights[i] * weights[i]);
         }
-        return weightSum * Config.WD * (1.0 / (2 * weightCount));
+        return weightSum * weightDecay * (1.0 / (2 * weightCount));
     }
 
 
@@ -189,10 +192,10 @@ public class NeuralNetwork implements Serializable {
      * @param points
      * @return
      */
-    public double Cost(DataPoint[] points) {
+    public double Cost(DataPoint[] points, double weightDecay) {
         double totalCost = 0;
         for (int i = 0; i < points.length; i++) {
-            totalCost += Cost(points[i]);
+            totalCost += Cost(points[i], weightDecay);
         }
         return (totalCost / points.length);
     }

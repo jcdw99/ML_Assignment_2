@@ -1,5 +1,8 @@
 public class Driver {
 
+
+    private static double[] params = {0.7, 1.4, 1.4, 0.5, 5, Config.batchSize, Config.WD};
+
     public static void doPinWheel() {
         int classes = 5;
         int[] sizes = {2, 10,10,10,10, classes};
@@ -20,12 +23,13 @@ public class Driver {
         run(net, v, points, "swirl");
     }
     public static void doSwirlSwarm() {
-        int classes = 3;
+        int classes = 2;
         int[] sizes = {2, 20, classes};
         String targetFile = "../data/swirl.csv";
         Visualize2D v = new Visualize2D(800, 800, 2, -40, 40, Config.blackness);
         DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
-        PSO_Swarm swarm = new PSO_Swarm(Config.swarmSize, sizes, points);
+        PSO_Swarm swarm = new PSO_Swarm(Config.swarmSize, sizes, points, params,
+                PSO_Particle.ParticleType.inertia);
         runSwarm(swarm, v, points, sizes, "swirlSwarm");
     }
 
@@ -76,11 +80,10 @@ public class Driver {
         String targetFile = "../data/3classSimple.csv";
         Visualize2D v = new Visualize2D(800, 800, 2, 0, 3, Config.blackness);
         DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
-        PSO_Swarm swarm = new PSO_Swarm(Config.swarmSize, sizes, points);
+        PSO_Swarm swarm = new PSO_Swarm(Config.swarmSize, sizes, points, params,
+                PSO_Particle.ParticleType.inertia);
         runSwarm(swarm, v, points, sizes, "3TrivialSwarm");
     }
-
-
 
     public static void doHardCircles() {
         int classes = 2;
@@ -108,7 +111,8 @@ public class Driver {
         String targetFile = "../data/x1sumx22less3.csv";
         Visualize2D v = new Visualize2D(800, 800, 2, 1, 2, Config.blackness);
         DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
-        PSO_Swarm swarm = new PSO_Swarm(Config.swarmSize, sizes, points);
+        PSO_Swarm swarm = new PSO_Swarm(Config.swarmSize, sizes, points, params,
+                PSO_Particle.ParticleType.inertia);
         runSwarm(swarm, v, points, sizes, "x1sumSwarm");
     }
 
@@ -129,11 +133,11 @@ public class Driver {
         String targetFile = "../data/circle.csv";
         Visualize2D v = new Visualize2D(800, 800, 2, 0, 2, Config.blackness);
         DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
-        PSO_Swarm swarm = new PSO_Swarm(Config.swarmSize, sizes, points);
+        PSO_Swarm swarm = new PSO_Swarm(Config.swarmSize, sizes, points, params,
+                PSO_Particle.ParticleType.inertia);
         runSwarm(swarm, v, points, sizes, "circleSwarm");
 
     }
-
 
     public static void doTrivial() {
         int classes = 2;
@@ -147,11 +151,24 @@ public class Driver {
 
     public static void doTrivialSwarm() {
         int classes = 2;
-        int[] sizes = {2, 10, classes};
+        int[] sizes = {2, 4, classes};
         String targetFile = "../data/simple.csv";
         Visualize2D v = new Visualize2D(800, 800, 2, 0, 2, Config.blackness);
         DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
-        PSO_Swarm swarm = new PSO_Swarm(Config.swarmSize, sizes, points);
+        PSO_Swarm swarm = new PSO_Swarm(Config.swarmSize, sizes, points, params,
+                PSO_Particle.ParticleType.inertia);
+        runSwarm(swarm, v, points, sizes, "simpleSwarm");
+
+    }
+
+    public static void doQSwarm() {
+        int classes = 3;
+        int[] sizes = {2, 4, classes};
+        String targetFile = "../data/3classSimple.csv";
+        Visualize2D v = new Visualize2D(800, 800, 2, 0, 3, Config.blackness);
+        DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
+        PSO_Swarm swarm = new PSO_Swarm(Config.swarmSize, sizes, points, params,
+                PSO_Particle.ParticleType.quantum);
         runSwarm(swarm, v, points, sizes, "simpleSwarm");
 
     }
@@ -191,18 +208,17 @@ public class Driver {
 
     public static void run(NeuralNetwork net, Visualize2D v, DataPoint[] points, String saveNetName) {
         for (int j = 0; j < 300000; j++) {
-            int batchSize = 20;
-            for (int i = 0; i < points.length / batchSize; i++) {
-                DataPoint[] batch = getRandomBatch(points, batchSize);
-                net.BackProp(batch, 0.1);
-            }
+
+            DataPoint[] batch = getRandomBatch(points, Config.batchSize);
+            net.BackProp(batch, 0.1, Config.WD);
+
             if (j % 200 == 0) {
-                
+                StdDraw.clear();
                 v.draw(net, points[0].expectedOutputVector.length);
                 v.scatterPoints(points, 5);
-                v.addError(net.Cost(points) + "", j + "", Score(net, points));
-                StdDraw.pause(50);
-                StdDraw.clear();
+                v.addError(String.format("%.6f", net.Cost(points, Config.WD)), j + "", Score(net, points));
+                StdDraw.show();
+                StdDraw.pause(20);
             }
             if (j == 40000) {
                 System.out.println(printVector(net.toConfigVector()));
@@ -215,15 +231,18 @@ public class Driver {
     public static void runSwarm(PSO_Swarm swarm, Visualize2D v, DataPoint[] points, int[] sizes, String saveNetName) {
         NeuralNetwork net = null;
         for (int iter = 0; iter < 100000; iter++) {
-            swarm.doUpdate();
+            DataPoint[] batch = getRandomBatch(points, Config.batchSize);
+            swarm.doUpdate(points);
             if (iter > 0 && iter % 100 == 0) {
                 // update visualizer
-                net = new NeuralNetwork(sizes, swarm.gBestVec);
+                net = new NeuralNetwork(swarm.NNSize, swarm.gBestVec);
+                StdDraw.clear();
                 v.draw(net, points[0].expectedOutputVector.length);
                 v.scatterPoints(points, 5);
-                v.addError(String.format("%.6f", swarm.gBestEval).replace(",", "."), iter + "", Score(net, points));
-                StdDraw.pause(50);
-                StdDraw.clear();
+                v.addError(String.format("%.6f", swarm.gBestEval).replace(",", "."),
+                        iter + "", Score(net, points));
+                StdDraw.show();
+                StdDraw.pause(20);
             }
         }
         net.saveNet("../nets/" + saveNetName + ".net");
@@ -235,6 +254,94 @@ public class Driver {
             batch[i] = points[(int)(Math.random() * points.length)];
         }
         return batch;
+    }
+
+    public static void findGradientDescentParameters() {
+        int classes = 3;
+        int[] layers = {2, 8, classes};
+        String targetFile = "../data/3classSimple.csv";
+        DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
+
+        String bestConfig = "Nope";
+        double bestMSE = Double.MAX_VALUE;
+
+        double[] learningRates = {0.0001, 0.001, 0.01, 0.1};
+        double[] weightDecays = {0.0001, 0.001, 0.01, 0.1};
+
+        for (double learnRate: learningRates) {
+            System.out.println("------------------------------");
+            System.out.println("Learning rate: " + learnRate);
+            for (double weightDecay: weightDecays) {
+                System.out.println("\tWeight decay: " + weightDecay);
+
+                NeuralNetwork net = new NeuralNetwork(layers);
+                for (int i = 0; i < Config.iterations; i++) {
+                    DataPoint[] batch = getRandomBatch(points, Config.batchSize);
+                    net.BackProp(batch, learnRate, weightDecay);
+                }
+                //TODO:: Find the validation MSE
+                double MSE = net.Cost(points, 0.0);
+                System.out.println("\tMSE: " + MSE);
+
+                if (MSE < bestMSE) {
+                    bestMSE = MSE;
+                    bestConfig = "Learning rate: " + learnRate + "\n" +
+                            "Weight decay: " + weightDecay;
+                }
+                System.out.println();
+            }
+        }
+
+        System.out.println("------------------------------");
+        System.out.println("------------------------------");
+        System.out.println("Best configurations: \n" + bestConfig + "\nMSE: " + bestMSE);
+    }
+
+    public static void findQuantumParameters() {
+        int classes = 3;
+        int[] layers = {2, 8, classes};
+        String targetFile = "../data/3classSimple.csv";
+        DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
+
+        String bestConfig = "Nope";
+        double bestMSE = Double.MAX_VALUE;
+
+        //TODO: Sample parameters
+        double[] params = {0.7, 1.4, 1.4, 0.5};
+
+        double[] radi = {0.01, 0.1, 1.0, 2.0, 5.0, 1.0};
+        double[] weightDecays = {0.0001, 0.001, 0.01, 0.1};
+
+        for (double radius: radi) {
+            System.out.println("------------------------------");
+            System.out.println("Radius: " + radius);
+            for (double weightDecay: weightDecays) {
+                System.out.println("\tWeight decay: " + weightDecay);
+
+                PSO_Swarm swarm = new PSO_Swarm(Config.swarmSize, layers, points, params,
+                        PSO_Particle.ParticleType.inertia);
+                for (int i = 0; i < Config.iterations; i++) {
+                    DataPoint[] batch = getRandomBatch(points, Config.batchSize);
+
+                    swarm.doUpdate(batch);
+                }
+
+                //TODO:: Find the validation MSE
+                double MSE = (new NeuralNetwork(swarm.NNSize, swarm.gBestVec)).Cost(points, 0.0);
+                System.out.println("\tMSE: " + MSE);
+
+                if (MSE < bestMSE) {
+                    bestMSE = MSE;
+                    bestConfig = "Radius: " + radius + "\n" +
+                            "Weight decay: " + weightDecay;
+                }
+                System.out.println();
+            }
+        }
+
+        System.out.println("------------------------------");
+        System.out.println("------------------------------");
+        System.out.println("Best configurations: \n" + bestConfig + "\nMSE: " + bestMSE);
     }
 
     public static String printVector(double[] x) {

@@ -78,10 +78,10 @@ public class Neuron implements Serializable{
         this.costGradientBias += this.neuronValue;
     }
 
-    public void updateGradient(double learnRate) {
+    public void updateGradient(double learnRate, double weightDecay) {
         this.bias -= (costGradientBias) * learnRate;
         for (int i = 0; i < this.weights.length; i++) {
-            weights[i] -= ((costGradientWeight[i]  + Config.WD * weights[i]) * learnRate);
+            weights[i] -= ((costGradientWeight[i]  + weightDecay * weights[i]) * learnRate);
         }
     }
 

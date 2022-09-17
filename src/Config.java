@@ -4,6 +4,5 @@ public class Config {
     public static final double learnRate = 0.1;
     public static final double blackness = 0.65;
     public static final double WD = 0.00;
-
-
+    public static final int iterations = 200000;
 }

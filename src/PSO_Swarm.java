@@ -1,14 +1,21 @@
+import java.util.Random;
+
 public class PSO_Swarm {
 
     public int[] NNSize;
     public PSO_Particle[] particles;  
     public double[] gBestVec;
+    private NeuralNetwork bestNetwork;
     public double gBestEval;
     public static DataPoint[] dataSet;
     public int stagnant = 0;
     public boolean ringTopology = true;
+    public double chargedPercent = 0.5;
+    public double[] params;
+    Random rand;
 
-    public PSO_Swarm(int size, int[] NNSize, DataPoint[] dataset) {
+    public PSO_Swarm(int size, int[] NNSize, DataPoint[] dataset, double[] params,
+                     PSO_Particle.ParticleType type) {
         // determine dimension of WeightBias Vector corresponding to NeuralNet of shape NNSize
         // accomplished by accumulating product of all layer sizes, adding number of noninput neurons
         int dim = 0;
@@ -23,12 +30,16 @@ public class PSO_Swarm {
         dataSet = dataset;
         this.NNSize = NNSize;
 
+        rand = new Random();
+
         // set control parameters
-        double[] params = {0.7, 1.4, 1.4};
+        this.params = params;
         // initialize swarm structure
         particles = new PSO_Particle[size];
         for (int i = 0; i < size; i++) {
-            particles[i] = new PSO_Particle(params, NNSize, dim);
+            particles[i] = new PSO_Particle(params, NNSize,
+                    dim, ((Math.random() > params[3])? PSO_Particle.ParticleType.inertia:type),
+                    rand);
         }
         // updateGbest
         if (!ringTopology)
@@ -73,7 +84,6 @@ public class PSO_Swarm {
 
     }
 
-
     public double diversity() {
         double[] averagePos = new double[particles[0].DIM];
         for (int i = 0; i < this.particles.length; i++) {
@@ -99,13 +109,15 @@ public class PSO_Swarm {
         }
         return Math.sqrt(distance);
     }
+
     /**
      * Run the update Procedure for each particle in the swarm
      * After the procedure has updated both velocity and position, compute and update the new gBest
      */
-    public void doUpdate() {
+    public void doUpdate(DataPoint[] points) {
         // for each particle, do velocity and position update
         for (int i = 0; i < particles.length; i++) {
+            particles[i].evaluateParticle(points);
             particles[i].updateVel();
             particles[i].updatePos();
         }
@@ -128,7 +140,6 @@ public class PSO_Swarm {
         return vec.toString();
     }
 
-
     /**
      * This function iterates the pbest's of the particles in the swarm, and returns the "best PBest" of the swarm
      * 
@@ -139,9 +150,11 @@ public class PSO_Swarm {
         double bestEval = particles[bestdex].pBest;
         
         for (int i = 1; i < particles.length; i++) {
-            if (particles[i].pBest < bestEval)
+            if (particles[i].pBest < bestEval) {
                 bestdex = i;
                 bestEval = particles[i].pBest;
+                bestNetwork = new NeuralNetwork(NNSize, particles[i].gBestVec);
+            }
         }
         double[][] retarr = {particles[bestdex].pBestVec, {bestEval}};
         return retarr;

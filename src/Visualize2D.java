@@ -69,14 +69,11 @@ public class Visualize2D {
             floatX = lb;
             floatY += stepSizeY;
         }
-        StdDraw.disableDoubleBuffering();
-        StdDraw.show();
     }
 
 
     public void scatterPoints(DataPoint[] points, int dotRadius) {
         StdDraw.setPenColor(StdDraw.BLACK);
-        StdDraw.enableDoubleBuffering();
         double interval = ub - lb;
         Color[] colors = {StdDraw.RED, StdDraw.GREEN, StdDraw.YELLOW, StdDraw.ORANGE, StdDraw.MAGENTA, StdDraw.BOOK_LIGHT_BLUE, StdDraw.GRAY, StdDraw.PINK};
         for (int i = 0; i < points.length; i++) {
@@ -86,21 +83,18 @@ public class Visualize2D {
             StdDraw.setPenColor(colors[points[i].targetClass]);
             StdDraw.filledCircle((int)(canvasWidth * xProp), (int)(canvasHeight * yProp), dotRadius);
         }
-        StdDraw.show();
     }
 
     public void addError(String error, String epoch, String acc) {
-        StdDraw.enableDoubleBuffering();        
         StdDraw.setPenColor(StdDraw.WHITE);
         StdDraw.filledRectangle((int) (.07 * this.canvasWidth), (int) (.965 * this.canvasHeight), 45, 15);
         StdDraw.filledRectangle((int) (.07 * this.canvasWidth), (int) (.915 * this.canvasHeight), 45, 15);
         StdDraw.filledRectangle((int) (.07 * this.canvasWidth), (int) (.865 * this.canvasHeight), 45, 15);
 
         StdDraw.setPenColor(StdDraw.BLACK);
-        StdDraw.text((int) (.07 * this.canvasWidth), (int) (.965 * this.canvasHeight), error.substring(0, Math.min(6, error.length())));
+        StdDraw.text((int) (.07 * this.canvasWidth), (int) (.965 * this.canvasHeight), error.substring(0, 6));
         StdDraw.text((int) (.07 * this.canvasWidth), (int) (.915 * this.canvasHeight), epoch);
         StdDraw.text((int) (.07 * this.canvasWidth), (int) (.865 * this.canvasHeight), acc);
-        StdDraw.show();
     }
 
 }

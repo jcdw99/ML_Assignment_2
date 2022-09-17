@@ -94,9 +94,9 @@ public class Layer implements Serializable {
         return vals;
     }
 
-    public void applyGradients(double learnRate) {
+    public void applyGradients(double learnRate, double weightDecay) {
         for (int i = 0; i < this.neurons.length; i++) {
-            this.neurons[i].updateGradient(learnRate);
+            this.neurons[i].updateGradient(learnRate, weightDecay);
         }
     }
 
