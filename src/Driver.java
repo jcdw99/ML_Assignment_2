@@ -195,6 +195,10 @@ public class Driver {
                 StdDraw.pause(50);
                 StdDraw.clear();
             }
+            if (j == 40000) {
+                System.out.println(printVector(net.toConfigVector()));
+                System.exit(1);
+            }
         }
         net.saveNet("../nets/" + saveNetName + ".net");
     }
@@ -222,5 +226,16 @@ public class Driver {
             batch[i] = points[(int)(Math.random() * points.length)];
         }
         return batch;
+    }
+
+    public static String printVector(double[] x) {
+        StringBuilder vec = new StringBuilder("[ ");
+        for (int i = 0; i < x.length; i++) {
+            vec.append(x[i]);
+            if (i < x.length - 1)
+                vec.append(", ");
+        }
+        vec.append(" ]\n");
+        return vec.toString();
     }
 }

@@ -15,7 +15,6 @@ public class NeuralNetwork implements Serializable {
     int weightCount;
     int inputSize;
     int neuronCount;
-    double WD = 0.01;
 
     public NeuralNetwork(int[] sizes) {
         this.neuronCount = sizes[0];
@@ -75,15 +74,6 @@ public class NeuralNetwork implements Serializable {
                 biasDex++;
             }
         }
-    }
-
-    public double weightTerm() {
-        double weightSum = 0;
-        double[] weights = this.toConfigVector();
-        for (int i = 0; i < weights.length - (this.neuronCount - this.inputSize); i++) {
-            weightSum += weights[i];
-        }
-        return Math.pow(weightSum, 2) * WD;
     }
 
     public double[] toConfigVector() {
@@ -173,10 +163,26 @@ public class NeuralNetwork implements Serializable {
         double[] target = d.expectedOutputVector;
         double cost = 0;
         for (int i = 0; i < outputs.length; i++) {
+            // squared error
             cost += (outputs[i] - target[i]) * (outputs[i] - target[i]);
         }
+        // mean square error
+        cost /= outputs.length;
+        cost += (cost + weightTerm());
         return cost;
     }
+
+
+    public double weightTerm() {
+        double weightSum = 0;
+        double[] weights = this.toConfigVector();
+        int weightCount = weights.length - (this.neuronCount - this.inputSize);
+        for (int i = 0; i < weightCount; i++) {
+            weightSum += (weights[i] * weights[i]);
+        }
+        return weightSum * Config.WD * (1.0 / (2 * weightCount));
+    }
+
 
     /**
      * Computes the total cost associated with the classification of the dataset
