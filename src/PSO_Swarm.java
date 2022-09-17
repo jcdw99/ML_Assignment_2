@@ -105,7 +105,6 @@ public class PSO_Swarm {
             System.out.println("converged");
             System.exit(0);
         }
-        System.out.println(diversity());
     }
 
     public String printVector(double[] x) {
