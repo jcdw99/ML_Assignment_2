@@ -128,7 +128,7 @@ class PSO_Particle {
      * Evaluate the quality of the provided vector with respect to the objective function being minimized
      * @param vec
      * @return
-     */
+     */  
     public double evaluateVec(double[] vec) {
         NeuralNetwork n = new NeuralNetwork(this.NNSize, vec);
         return n.Cost(Driver.getRandomBatch(PSO_Swarm.dataSet, Config.batchSize));
