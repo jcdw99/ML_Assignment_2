@@ -12,12 +12,21 @@ public class Driver {
 
     public static void doSwirl() {
         int classes = 2;
-        int[] sizes = {2, 7,7,7, classes};
+        int[] sizes = {2, 20, classes};
         String targetFile = "../data/swirl.csv";
         Visualize2D v = new Visualize2D(800, 800, 2, -40, 40, Config.blackness);
         NeuralNetwork net = new NeuralNetwork(sizes);
         DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
         run(net, v, points, "swirl");
+    }
+    public static void doSwirlSwarm() {
+        int classes = 3;
+        int[] sizes = {2, 20, classes};
+        String targetFile = "../data/swirl.csv";
+        Visualize2D v = new Visualize2D(800, 800, 2, -40, 40, Config.blackness);
+        DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
+        PSO_Swarm swarm = new PSO_Swarm(Config.swarmSize, sizes, points);
+        runSwarm(swarm, v, points, sizes, "swirlSwarm");
     }
 
     public static void doSwirlNoise() {
@@ -116,7 +125,7 @@ public class Driver {
 
     public static void doCircleSwarm() {
         int classes = 2;
-        int[] sizes = {2, 6, classes};
+        int[] sizes = {2, 4, classes};
         String targetFile = "../data/circle.csv";
         Visualize2D v = new Visualize2D(800, 800, 2, 0, 2, Config.blackness);
         DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
@@ -212,7 +221,7 @@ public class Driver {
                 net = new NeuralNetwork(sizes, swarm.gBestVec);
                 v.draw(net, points[0].expectedOutputVector.length);
                 v.scatterPoints(points, 5);
-                v.addError(swarm.gBestEval + "", iter + "", Driver.Score(net, points));
+                v.addError(String.format("%.6f", swarm.gBestEval).replace(",", "."), iter + "", Score(net, points));
                 StdDraw.pause(50);
                 StdDraw.clear();
             }

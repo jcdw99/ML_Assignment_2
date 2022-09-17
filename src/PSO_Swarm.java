@@ -39,22 +39,37 @@ public class PSO_Swarm {
     }
 
     public void updateRingTopology() {
-        for (int i = 1; i < particles.length; i++) {
+
+        // global gbest observed
+        double bestObserved = Double.MAX_VALUE;
+        int gbestDex = 0;
+
+        for (int i = 0; i < particles.length; i++) {
             int partnerUp = (i + 1) % this.particles.length;
-            int partnerDown = (i - 1) * ((i - 1) > 0 ? 1: -1);
+            int partnerDown = (i == 0) ? this.particles.length - 1 : i - 1;
             double bestEval = Double.MAX_VALUE;
+
+            int bestDex = i;
             // find bestEval of neighborhoood
             for (int j = partnerDown; j <= partnerUp; j++) {
-                if (particles[j].pBest < bestEval)
+                if (particles[j].pBest < bestEval) {
                     bestEval = particles[j].pBest;
+                    bestDex = j;
+                    // if this neighborhood best is better than our observed Gbest
+                    if (bestEval < bestObserved) {
+                        bestObserved = bestEval;
+                        gbestDex = j;
+                    }
+                }
             }
+
             // set bestEval as gbest in neighborhood
-            for (int j = partnerDown; j <= partnerUp; j++) {
-                particles[j].gBest = bestEval;
-            }
+            particles[i].gBest = bestEval;
+            particles[i].gBestVec = duplicate(particles[bestDex].pBestVec);
         }
-        double newGbest[][] = findGBest();
-        setGBest(newGbest);
+        // update gbestVec
+        this.gBestVec = duplicate(particles[gbestDex].pBestVec);
+        this.gBestEval = particles[gbestDex].pBest;
 
     }
 
@@ -95,15 +110,10 @@ public class PSO_Swarm {
             particles[i].updatePos();
         }
         // find the new gBest, and make each particle reflect this value
-        double newGbest[][] = findGBest();
-        if (newGbest[1][0] - gBestEval < 0.00001)
-            stagnant += 1;
-        else
-            stagnant = 0;
-        setGBest(newGbest);
-        if (stagnant > 15000) {
-            System.out.println("converged");
-            System.exit(0);
+        if (ringTopology) {
+            updateRingTopology();
+        } else {      
+            setGBest(findGBest());
         }
     }
 

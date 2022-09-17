@@ -97,7 +97,7 @@ public class Visualize2D {
         StdDraw.filledRectangle((int) (.07 * this.canvasWidth), (int) (.865 * this.canvasHeight), 45, 15);
 
         StdDraw.setPenColor(StdDraw.BLACK);
-        StdDraw.text((int) (.07 * this.canvasWidth), (int) (.965 * this.canvasHeight), error.substring(0, 6));
+        StdDraw.text((int) (.07 * this.canvasWidth), (int) (.965 * this.canvasHeight), error.substring(0, Math.min(6, error.length())));
         StdDraw.text((int) (.07 * this.canvasWidth), (int) (.915 * this.canvasHeight), epoch);
         StdDraw.text((int) (.07 * this.canvasWidth), (int) (.865 * this.canvasHeight), acc);
         StdDraw.show();
