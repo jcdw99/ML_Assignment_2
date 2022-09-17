@@ -1,3 +1,4 @@
+
 import java.awt.Color;
 
 public class Visualize2D {
@@ -6,8 +7,8 @@ public class Visualize2D {
     int canvasHeight;
     double lb;
     double ub;
-    // pixels are squares, consider canvasWidth and canvasHeight when deciding
     int pixSize;
+    double blackness;
 
     public Visualize2D(int width, int height, double lb, double ub) {
         this.canvasWidth = width;
@@ -20,7 +21,7 @@ public class Visualize2D {
         initCanvas();
     }
 
-    public Visualize2D(int width, int height, int pixSize, double lb, double ub) {
+    public Visualize2D(int width, int height, int pixSize, double lb, double ub, double blackness) {
         this.canvasWidth = width;
         this.canvasHeight = height;
         this.lb = lb;
@@ -36,11 +37,16 @@ public class Visualize2D {
         StdDraw.setXscale(0, this.canvasWidth);
         StdDraw.setYscale(0, this.canvasHeight);
         StdDraw.filledCircle(0, 0, 30);
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.filledRectangle(this.canvasWidth/2, this.canvasHeight/2, this.canvasWidth / 2, this.canvasHeight / 2);
         StdDraw.enableDoubleBuffering();
     }
 
-
     public void draw(NeuralNetwork net, int classes) {
+
+        StdDraw.setPenColor(StdDraw.BLACK);
+        StdDraw.filledRectangle(this.canvasWidth/2, this.canvasHeight/2, this.canvasWidth / 2, this.canvasHeight / 2);
+
         int xPixels = this.canvasHeight / this.pixSize;
         int yPixels = this.canvasWidth / this.pixSize;
         
@@ -50,14 +56,14 @@ public class Visualize2D {
         double floatX = lb;
         double floatY = lb;
 
-        Color[] colors = {new Color(205, 34, 44), new Color(34, 205, 44), new Color(205, 205, 55), new Color(205, 155, 0) ,new Color(205, 0, 205), new Color(78, 173, 218), new Color(55,55,55), new Color(200, 125, 125)};
+        Color[] colors = {new Color(205, 34, 44), new Color(34, 205, 44), new Color(205, 205, 55), new Color(175, 125, 30) ,new Color(205, 0, 205), new Color(78, 173, 218), new Color(55,55,55), new Color(200, 125, 125)};
 
         for (int i = 0; i < xPixels; i ++) {
             for (int j = 0; j < yPixels; j ++) {
                 double[] input = {floatY, floatX};
                 int targetClass = net.Classify(input);
                 StdDraw.setPenColor(colors[targetClass]);
-                StdDraw.filledSquare(i * pixSize + pixSize / 2, j * pixSize + pixSize/2, pixSize/2);
+                StdDraw.filledSquare(i * pixSize + ((pixSize / 2)), j * pixSize + ((pixSize / 2)), (pixSize/2) * blackness);
                 floatX += stepSizeX;
             }
             floatX = lb;

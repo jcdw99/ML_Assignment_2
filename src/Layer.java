@@ -15,11 +15,33 @@ public class Layer implements Serializable {
         this.numNodesIn = nodesIn;
         this.numNodesOut = nodesOut;
         // initialize array of neurons
-        neurons = new Neuron[nodesOut];
+        this.neurons = new Neuron[nodesOut];
         if (numNodesIn > 0)
             for (int i = 0; i < neurons.length; i++) {
                 neurons[i] = new Neuron(nodesIn);
             }
+    }
+
+    /**
+     * Use this constructor when creating a NeuralNetwork from a weightbias Vector
+     * @param numNodesOut nodes feeding into this layer
+     * @param weights
+     */
+    public Layer(int numNodesOut, double[] weights) {
+        this.numNodesIn = weights.length / numNodesOut;
+        this.numNodesOut = numNodesOut;
+        this.neurons = new Neuron[numNodesOut];
+
+        for (int i = 0; i < numNodesOut; i++) {
+            // for each neuron of this layer
+            double[] neuronWeights = new double[numNodesIn];
+            for (int j = 0; j < numNodesIn; j++) {
+                // get weight vector for this neuron
+                neuronWeights[j] = weights[(i * numNodesIn) + j];
+            }
+            this.neurons[i] = new Neuron(neuronWeights);
+        }
+
     }
 
     /**
@@ -97,9 +119,4 @@ public class Layer implements Serializable {
             this.neurons[i].backwardHidden(weights[i], nodeVals, activations);
         }
     }
-
-
-
-
-
 }

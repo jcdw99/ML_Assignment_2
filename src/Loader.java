@@ -1,8 +1,9 @@
 import java.io.File;
 import java.util.Scanner;
 import java.util.ArrayList;
+
 public class Loader {
-    
+        
     public static DataPoint[] loadPointsFromFile(String filePath, int inputVecSize, int classes) {
         try {
             Scanner sc = new Scanner(new File(filePath));

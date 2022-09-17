@@ -16,10 +16,18 @@ public class Neuron implements Serializable{
 
     public Neuron(int numInNodes) {
         this.weights = new double[numInNodes];
-        for (int i =0; i < numInNodes; i++)
+        for (int i = 0; i < numInNodes; i++)
             this.weights[i] = Math.random() * ((Math.random() > 0.5) ? -1:1);
         this.bias = Math.random() * ((Math.random() > 0.5) ? -1:1);
         this.costGradientWeight = new double[this.weights.length];
+    }
+
+    /**
+     * Use this constructor when creating a Neuralnetwork from a weight bias vector
+     */
+    public Neuron(double[] weights) {
+        this.weights = weights;
+        this.costGradientWeight = new double[weights.length];
     }
 
     public double forward(double[] inputVec) {
@@ -34,11 +42,6 @@ public class Neuron implements Serializable{
 
     private double CostDeriv(double expectedActivation) {
         return 2 * (this.activation - expectedActivation);
-    }
-
-    public double Cost(double expectedActivation) {
-        double error = this.activation - expectedActivation;
-        return error * error;
     }
     
     /**
@@ -78,7 +81,7 @@ public class Neuron implements Serializable{
     public void updateGradient(double learnRate) {
         this.bias -= (costGradientBias) * learnRate;
         for (int i = 0; i < this.weights.length; i++) {
-            weights[i] -= costGradientWeight[i] * learnRate;
+            weights[i] -= (costGradientWeight[i] * learnRate);
         }
     }
 
@@ -89,5 +92,9 @@ public class Neuron implements Serializable{
 
     private void updateNodeValue(double expectedActivation) {
          this.neuronValue = CostDeriv(expectedActivation) * ActivationFuncs.SigmoidDeriv(this.weightedInput); 
+    }
+
+    public void updateBias(double bias) {
+        this.bias = bias;
     }
 }

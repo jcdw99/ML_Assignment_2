@@ -119,7 +119,7 @@ public final class StdDraw implements ActionListener, MouseListener, MouseMotion
     /**
      *  The color orange.
      */
-    public static final Color ORANGE = Color.ORANGE;
+    public static final Color ORANGE = new Color(225, 180, 0);
 
     /**
      *  The color pink.
