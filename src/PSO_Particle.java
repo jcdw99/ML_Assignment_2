@@ -1,5 +1,8 @@
+import java.util.Random;
+
 class PSO_Particle {
 
+    public Config.PsoType ptype;
     public int[] NNSize;
     public double[] position;
     public double[] pBestVec;
@@ -11,52 +14,33 @@ class PSO_Particle {
     public double c1;
     public double c2;
     public int DIM;
-    boolean nnmode = true;
+    private Random r = new Random();
     /**
      * Construct a PSO_Particle
      * @param controlParams list of model control parameters of form {w, c1, c2}
      * @param flag flag which denotes the objective function this particle attempts to minimnize
      * @param dim The dimension of this particles search space
      */
-    public PSO_Particle(double[] controlParams, int[] NNSize, int dim) {
+    public PSO_Particle(int[] NNSize, Config.PsoType ptype, int dim) {
+
+        this.ptype = ptype;
+
         //set useful global fields
         this.NNSize = NNSize;
         this.DIM = dim;
 
         // control params of the form [w, c1, c2]
-        this.w = controlParams[0];
-        this.c1 = controlParams[1];
-        this.c2 = controlParams[2];
-
+        this.w = Config.w;
+        this.c1 = Config.c1;
+        this.c2 = Config.c2;
         this.position = new double[dim];
+
         for (int i = 0; i < this.position.length; i++)
             position[i] = Math.random() * ((Math.random() > 0.5) ? -1:1);
 
         this.pBestVec = duplicate(position);
-        if (nnmode) {
-            this.pBest = evaluatePos();
-        } else {
-            this.pBest = evaluateFake();
-        }
+        this.pBest = Double.MAX_VALUE;
         this.velocity = new double[dim];
-    }
-    /**
-     * Evaluate the quality of this particles position with respect to the objective function being minimized
-     * @return
-     */
-    public double evaluatePos() {
-        NeuralNetwork n = new NeuralNetwork(this.NNSize, this.position);
-        double eval = n.Cost(Driver.getRandomBatch(PSO_Swarm.dataSet, Config.batchSize));
-
-        return eval;
-    }
-
-    public double evaluateFake() {
-        double sum = 0;
-        for (int i = 0; i < this.position.length; i++) {
-            sum += this.position[i] * this.position[i];
-        }   
-        return sum;
     }
 
     public double[] duplicate(double[] target) {
@@ -97,50 +81,28 @@ class PSO_Particle {
      * This will update pbestVal and pbestVec if needed
      */
     public void updatePos() {
-        for (int i = 0; i < this.velocity.length; i++) {
-            this.position[i] += this.velocity[i];
+        if (ptype == Config.PsoType.INTERTIA) {
+            for (int i = 0; i < this.velocity.length; i++) {
+                this.position[i] += this.velocity[i];
+            }
+        } else if (ptype == Config.PsoType.QUANTUM) {
+                for (int i = 0; i < this.velocity.length; i++) {
+                    this.position[i] = gBestVec[i] +
+                            (r.nextGaussian() * Config.radius);
+                }
+            }
         }
-        double evalPos;
-        if (nnmode) {
-            evalPos = evaluatePos();
-        } else {
-            evalPos = evaluateFake();
-        }
+
+    public double evaluateParticle(DataPoint[] points) {
+        NeuralNetwork net = new NeuralNetwork(this.NNSize, this.position);
+        double evalPos = net.Cost(points);
+
         if (evalPos < this.pBest) {
             this.pBest = evalPos;
             this.pBestVec = duplicate(this.position);
         }
-    }
 
-    /**
-     * update the GBest value of this particle to reflect the provided vector
-     */
-    public void updateGBest(double[] newBest) {
-        this.gBestVec = duplicate(newBest);
-        if (nnmode) {
-            this.gBest = evaluateVec(newBest);
-        } else {
-            this.gBest = evaluateVecFake(newBest);
-        }
-    }
-
-    /**
-     * Evaluate the quality of the provided vector with respect to the objective function being minimized
-     * @param vec
-     * @return
-     */  
-    public double evaluateVec(double[] vec) {
-        NeuralNetwork n = new NeuralNetwork(this.NNSize, vec);
-        return n.Cost(Driver.getRandomBatch(PSO_Swarm.dataSet, Config.batchSize));
-    }
-
-
-    public double evaluateVecFake(double[] pos) {
-        double sum = 0;
-        for (int i = 0; i < pos.length; i++) {
-            sum += pos[i] * pos[i];
-        }   
-        return sum;
+        return evalPos;
     }
 
 }

@@ -4,11 +4,11 @@ public class PSO_Swarm {
     public PSO_Particle[] particles;  
     public double[] gBestVec;
     public double gBestEval;
-    public static DataPoint[] dataSet;
     public int stagnant = 0;
     public boolean ringTopology = true;
+    public double[] params;
 
-    public PSO_Swarm(int size, int[] NNSize, DataPoint[] dataset) {
+    public PSO_Swarm(int size, int[] NNSize) {
         // determine dimension of WeightBias Vector corresponding to NeuralNet of shape NNSize
         // accomplished by accumulating product of all layer sizes, adding number of noninput neurons
         int dim = 0;
@@ -19,16 +19,20 @@ public class PSO_Swarm {
                 dim += NNSize[i];
         }
         dim += dimProd;
-
-        dataSet = dataset;
         this.NNSize = NNSize;
 
-        // set control parameters
-        double[] params = {0.7, 1.4, 1.4};
         // initialize swarm structure
         particles = new PSO_Particle[size];
         for (int i = 0; i < size; i++) {
-            particles[i] = new PSO_Particle(params, NNSize, dim);
+            if (Config.activePsoType == Config.PsoType.INTERTIA)
+                particles[i] = new PSO_Particle(NNSize, Config.activePsoType, dim);
+            else
+                particles[i] = new PSO_Particle(
+                                    NNSize, 
+                                    (Math.random() < Config.chargedPercent) ? Config.PsoType.QUANTUM : Config.PsoType.INTERTIA, 
+                                    dim
+                                );
+
         }
         // updateGbest
         if (!ringTopology)
@@ -99,13 +103,15 @@ public class PSO_Swarm {
         }
         return Math.sqrt(distance);
     }
+
     /**
      * Run the update Procedure for each particle in the swarm
      * After the procedure has updated both velocity and position, compute and update the new gBest
      */
-    public void doUpdate() {
+    public void doUpdate(DataPoint[] points) {
         // for each particle, do velocity and position update
         for (int i = 0; i < particles.length; i++) {
+            particles[i].evaluateParticle(points);
             particles[i].updateVel();
             particles[i].updatePos();
         }

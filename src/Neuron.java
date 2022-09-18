@@ -36,7 +36,7 @@ public class Neuron implements Serializable{
             weighted += this.weights[i] * inputVec[i];
         }
         this.weightedInput = weighted;
-        this.activation = ActivationFuncs.Sigmoid(this.weightedInput);
+        this.activation = ActivationFuncs.Activate(this.weightedInput, Config.AFUNC);
         return this.activation; 
     }
 
@@ -55,7 +55,7 @@ public class Neuron implements Serializable{
         double val = 0.0;
         for (int i = 0; i < nodeVals.length; i ++)
             val += weights[i] * nodeVals[i];
-        val *= ActivationFuncs.SigmoidDeriv(this.weightedInput);
+        val *= ActivationFuncs.ActivateDeriv(this.weightedInput, Config.AFUNC);
         this.neuronValue = val;
         for (int i = 0; i < activations.length; i++) {
             this.costGradientWeight[i] += activations[i] * this.neuronValue;
@@ -91,7 +91,7 @@ public class Neuron implements Serializable{
     }
 
     private void updateNodeValue(double expectedActivation) {
-         this.neuronValue = CostDeriv(expectedActivation) * ActivationFuncs.SigmoidDeriv(this.weightedInput); 
+         this.neuronValue = CostDeriv(expectedActivation) * ActivationFuncs.ActivateDeriv(this.weightedInput, Config.AFUNC); 
     }
 
     public void updateBias(double bias) {

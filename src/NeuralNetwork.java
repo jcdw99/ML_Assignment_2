@@ -168,7 +168,7 @@ public class NeuralNetwork implements Serializable {
         }
         // mean square error
         cost /= outputs.length;
-        cost += (cost + weightTerm());
+        cost += (weightTerm());
         return cost;
     }
 
