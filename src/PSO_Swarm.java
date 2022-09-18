@@ -38,9 +38,16 @@ public class PSO_Swarm {
         // initialize swarm structure
         particles = new PSO_Particle[size];
         for (int i = 0; i < size; i++) {
-            particles[i] = new PSO_Particle(params, NNSize,
-                    dim, ((Math.random() > params[3])? PSO_Particle.ParticleType.inertia:type),
-                    rand);
+            if (type == PSO_Particle.ParticleType.inertia) {
+                particles[i] = new PSO_Particle(params, NNSize, dim, type, rand);
+            } else if (type == PSO_Particle.ParticleType.charged) {
+                particles[i] = new PSO_Particle(params, NNSize,
+                        dim, ((Math.random() > params[Driver.charge])?
+                        PSO_Particle.ParticleType.inertia : type),rand);
+            } else {
+                particles[i] = new PSO_Particle(params, NNSize, dim,
+                        PSO_Particle.ParticleType.quantum, rand);
+            }
         }
         // updateGbest
         if (!ringTopology)

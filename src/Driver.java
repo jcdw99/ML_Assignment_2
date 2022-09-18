@@ -347,7 +347,7 @@ public class Driver {
                 System.out.println(config);
 
                 PSO_Swarm swarm = new PSO_Swarm(Constants.swarmSize, layers, points, ps,
-                        PSO_Particle.ParticleType.inertia);
+                        PSO_Particle.ParticleType.quantum);
 
                 for (int i = 0; i < Constants.iterations; i++) {
                     DataPoint[] batch = getRandomBatch(points, Constants.batchSize);
@@ -378,6 +378,7 @@ public class Driver {
         String bestConfig = "Nope";
         double bestMSE = Double.MAX_VALUE;
 
+        //TODO:: create a range that is sampled from at each iteration
         double[] charges = {7, 10};
         double[] coreRadii = {0.01, 0.1, 1.0, 2};
         double[] perceptionRadii = {3, 5, 7, 10};
@@ -402,7 +403,7 @@ public class Driver {
                         System.out.println(config);
 
                         PSO_Swarm swarm = new PSO_Swarm(Constants.swarmSize, layers, points, ps,
-                                PSO_Particle.ParticleType.inertia);
+                                PSO_Particle.ParticleType.charged);
 
                         for (int i = 0; i < Constants.iterations; i++) {
                             DataPoint[] batch = getRandomBatch(points, Constants.batchSize);
@@ -437,14 +438,17 @@ public class Driver {
         //TODO: Split the data into training and test
         DataPoint[] points = Loader.loadPointsFromFile("../data/" + datasetName + ".csv",
                 sizes[0], classes);
+
         int[] batchSizes = {20, 50, 100, points.length};
 
         int numTrials = 5;
         int recordSteps = 10;
-        double[][] histories = new double[batchSizes.length][points.length/recordSteps];
+
+        double[][] histories = new double[batchSizes.length][Constants.iterations/recordSteps];
 
         for (int b = 0; b < batchSizes.length; b++) {
-            int batchSize = batchSizes[b];
+            int batchSize = Math.min(batchSizes[b], points.length);
+            System.out.println("BatchSize: " + batchSize);
             for (int t = 0; t < numTrials; t++) {
                 NeuralNetwork net = new NeuralNetwork(layers);
                 for (int i = 0; i < Constants.iterations; i++) {
@@ -452,11 +456,64 @@ public class Driver {
                     net.BackProp(batch, Constants.learnRate, Constants.WD);
 
                     if (i % recordSteps == 0) {
-                        histories[b][i/recordSteps] = net.Cost(points, 0.0);
+                        histories[b][i/recordSteps] += net.Cost(points, 0.0);
                     }
                 }
             }
         }
+        HistorySaver.saveHistories("../histories/GD-" + datasetName, histories, batchSizes);
+    }
+
+    public static void recordQuantumSwarm() {
+        String datasetName = Constants.heart;
+
+        int classes = Constants.datasetClasses.get(datasetName);
+        int[] sizes = Constants.datasetNNSize.get(datasetName);
+        int[] layers = {sizes[0], sizes[1], classes};
+        //TODO: Split the data into training and test
+        DataPoint[] points = Loader.loadPointsFromFile("../data/" + datasetName + ".csv",
+                sizes[0], classes);
+
+        int[] batchSizes = {20, 50, 100, points.length};
+
+        int numTrials = 5;
+        int recordSteps = 10;
+
+        double[][] histories = new double[batchSizes.length][Constants.iterations/recordSteps];
+
+        double[] ps = Arrays.copyOf(params, params.length);
+
+        ps[Driver.radius] = 5.0;
+        ps[Driver.weightDecay] = 0.0001;
+
+        for (int b = 0; b < batchSizes.length; b++) {
+            int batchSize = Math.min(batchSizes[b], points.length);
+            System.out.println("BatchSize: " + batchSize);
+            for (int t = 0; t < numTrials; t++) {
+                PSO_Swarm swarm = new PSO_Swarm(Constants.swarmSize, layers, points, ps,
+                        PSO_Particle.ParticleType.inertia);
+
+                for (int i = 0; i < Constants.iterations; i++) {
+                    DataPoint[] batch = getRandomBatch(points, Constants.batchSize);
+                    swarm.doUpdate(batch);
+                }
+
+                //TODO:: Find the validation MSE
+                double MSE = (new NeuralNetwork(swarm.NNSize, swarm.gBestVec)).Cost(points, 0.0);
+                System.out.println("MSE: " + MSE);
+
+                NeuralNetwork net = new NeuralNetwork(layers);
+                for (int i = 0; i < Constants.iterations; i++) {
+                    DataPoint[] batch = getRandomBatch(points, batchSize);
+                    net.BackProp(batch, Constants.learnRate, Constants.WD);
+
+                    if (i % recordSteps == 0) {
+                        histories[b][i/recordSteps] += net.Cost(points, 0.0);
+                    }
+                }
+            }
+        }
+        HistorySaver.saveHistories("../histories/GD-" + datasetName, histories, batchSizes);
     }
 
     public static String printVector(double[] x) {

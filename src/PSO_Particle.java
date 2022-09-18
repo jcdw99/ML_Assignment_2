@@ -43,6 +43,7 @@ class PSO_Particle {
 
         // control params of the form [w, c1, c2]
         this.params = controlParams;
+        this.charge = (type == ParticleType.charged)?controlParams[Driver.charge] : 0.0;
 
         this.rand = rand;
 
@@ -70,13 +71,11 @@ class PSO_Particle {
      */
     public void updateVel(double[] a) {
         for (int i = 0; i < this.velocity.length; i++) {
-            if (type == ParticleType.inertia) {
-                this.velocity[i] =
-                        params[Driver.w] * this.velocity[i] +
-                        params[Driver.c1] * Math.random() * (this.pBestVec[i] - this.position[i]) +
-                        params[Driver.c2] * Math.random() * (this.gBestVec[i] - this.position[i]) +
-                        a[i];
-            }
+            this.velocity[i] =
+                    params[Driver.w] * this.velocity[i] +
+                    params[Driver.c1] * Math.random() * (this.pBestVec[i] - this.position[i]) +
+                    params[Driver.c2] * Math.random() * (this.gBestVec[i] - this.position[i]) +
+                    a[i];
         }
     }
 
