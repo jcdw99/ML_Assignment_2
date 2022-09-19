@@ -91,8 +91,9 @@ public class Evaluator {
             testingAccs[trial] = results[1];
         }
 
-        writeFile(trainingMSE, "3TrivialSwarmTraining");
-        writeFile(testingAccs, "3TrivialSwarmTestAccs");
+        String swarmType = (type == Config.PsoType.QUANTUM) ? "Q_": "";
+        writeFile(trainingMSE, "3Trivial" + swarmType + "SwarmTraining");
+        writeFile(testingAccs, "3Trivial" + swarmType + "SwarmTestAccs");
     }
 
 

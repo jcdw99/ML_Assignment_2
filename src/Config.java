@@ -38,6 +38,6 @@ public class Config {
      * EVALUATOR CONSTANTS
      */
     public static final int WRITE_GRANULARITY = 100;
-    public static final int TRIALS = 3;
-    public static final int ITERATIONS = 5_000;
+    public static final int TRIALS = 20;
+    public static final int ITERATIONS = 10_000;
 }
