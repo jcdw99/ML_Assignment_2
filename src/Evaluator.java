@@ -17,8 +17,17 @@ public class Evaluator {
         DataPoint[] points = Loader.loadPointsFromFile("../data/3classSimple.csv", 2, 3);
         int classes = 3;
         int[] sizes = {2, 10, classes};
-        runSwarm(points, sizes, type);
+        runSwarm(points, sizes, "3Trivial", type);
     }
+
+
+    public static void do3Trivial() {
+        DataPoint[] points = Loader.loadPointsFromFile("../data/3classSimple.csv", 2, 3);
+        int classes = 3;
+        int[] sizes = {2, 10, classes};
+        runNN(points, sizes, "3Trivial");
+    }
+
 
     public static void printClassificationAccuracy(NeuralNetwork net, DataPoint[] testSet) {
         double accuracy = net.ClassifyAccuracy(testSet);
@@ -58,17 +67,78 @@ public class Evaluator {
                     System.out.printf("\t%sIter: %s%d of %d\n", WHITE, BLUE, iter, Config.ITERATIONS);
             }
         }
+
         // generate NN from gbest configuration, to obtain final classification accuracy on test set
         NeuralNetwork n = new NeuralNetwork(sizes, swarm.gBestVec);
         double[][] results = {trialData, {n.ClassifyAccuracy(testData)} };
         printClassificationAccuracy(n, testData);
         return results;
-
     }
 
-
-    public static void runSwarm(DataPoint[] points, int[] sizes, Config.PsoType type) {
+    public static double[][] runNNTrial(DataPoint[] trainData, DataPoint[] testData,  int[] sizes) {
         
+        // construct the swarm for this trial
+        NeuralNetwork n = new NeuralNetwork(sizes);
+
+        double[] trialData = new double[(int)((Config.ITERATIONS * Config.SWARMSIZE) / (Config.WRITE_GRANULARITY * Config.SWARMSIZE)) - 1];
+        int writeCount = 0;
+
+        // conduct the trial
+        for (int iter = 0; iter < Config.ITERATIONS * Config.SWARMSIZE; iter++) {
+
+            // get batch from training set
+            DataPoint[] batch = Driver.getRandomBatch(trainData, Config.BATCHSIZE);
+            n.BackProp(batch, Config.LEARNRATE);
+
+            // if this is a granule, write to output file
+            if (iter > 0 && iter % (Config.WRITE_GRANULARITY * Config.SWARMSIZE) == 0) {
+                trialData[writeCount++] =  n.Cost(batch);
+                if (writeCount % 10 == 0)
+                    System.out.printf("\t%sIter: %s%d of %d\n", WHITE, BLUE, iter, Config.ITERATIONS * Config.SWARMSIZE);
+            }
+        }
+
+        // generate NN from gbest configuration, to obtain final classification accuracy on test set
+        double[][] results = {trialData, {n.ClassifyAccuracy(testData)} };
+        printClassificationAccuracy(n, testData);
+        return results;
+    }
+
+    public static void runNN(DataPoint[] points, int[] sizes, String fileName) {
+
+        // NN experiment info
+        String batchSize = "_" + Config.BATCHSIZE;
+
+        // get training and testing data
+        double[][] trainingMSE = new double[Config.TRIALS][];
+        double[][] testingAccs = new double[Config.TRIALS][1];
+        
+        // for each independent trial
+        for (int trial = 0; trial < Config.TRIALS; trial++) {
+            System.out.printf("%sRunning %s%s%s Trial: %s%d of %d%s\n", WHITE, GREEN, "NN" + batchSize, WHITE, GREEN, trial + 1, Config.TRIALS, RESET);
+
+            // get this trials trainSet and testSet
+            DataPoint[][] trainTest = Driver.splitSet(points, 0.7);
+
+            // conduct the trial
+            double[][] results = runNNTrial(trainTest[0], trainTest[1],  sizes);
+
+            // record the results
+            trainingMSE[trial] = results[0];
+            testingAccs[trial] = results[1];
+        }
+
+        // write results to file
+        writeFile(trainingMSE, fileName + "NNTraining" + batchSize);
+        writeFile(testingAccs, fileName + "NNTestAccs" + batchSize);
+    }
+
+    public static void runSwarm(DataPoint[] points, int[] sizes, String fileName, Config.PsoType type) {
+       
+        // swarm experiment info
+        String swarmType = (type == Config.PsoType.QUANTUM) ? "Q_": "";
+        String batchSize = "_" + Config.BATCHSIZE;
+
         // get training and testing data
         double[][] trainingMSE = new double[Config.TRIALS][];
         double[][] testingAccs = new double[Config.TRIALS][1];
@@ -78,7 +148,7 @@ public class Evaluator {
 
         // for each independent trial
         for (int trial = 0; trial < Config.TRIALS; trial++) {
-            System.out.printf("%sRunning Trial: %s%d of %d%s\n", WHITE, GREEN, trial + 1, Config.TRIALS, RESET);
+            System.out.printf("%sRunning %s%s%s Trial: %s%d of %d%s\n", WHITE, GREEN, swarmType + "PSO" + batchSize, WHITE, GREEN, trial + 1, Config.TRIALS, RESET);
 
             // get this trials trainSet and testSet
             DataPoint[][] trainTest = Driver.splitSet(points, 0.7);
@@ -90,10 +160,9 @@ public class Evaluator {
             trainingMSE[trial] = results[0];
             testingAccs[trial] = results[1];
         }
-
-        String swarmType = (type == Config.PsoType.QUANTUM) ? "Q_": "";
-        writeFile(trainingMSE, "3Trivial" + swarmType + "SwarmTraining");
-        writeFile(testingAccs, "3Trivial" + swarmType + "SwarmTestAccs");
+        // write results to file
+        writeFile(trainingMSE, fileName + swarmType + "SwarmTraining" + batchSize);
+        writeFile(testingAccs, fileName + swarmType + "SwarmTestAccs" + batchSize);
     }
 
 
