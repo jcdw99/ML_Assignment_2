@@ -24,12 +24,12 @@ public class PSO_Swarm {
         // initialize swarm structure
         particles = new PSO_Particle[size];
         for (int i = 0; i < size; i++) {
-            if (Config.activePsoType == Config.PsoType.INTERTIA)
-                particles[i] = new PSO_Particle(NNSize, Config.activePsoType, dim);
+            if (Config.PSO_TYPE == Config.PsoType.INTERTIA)
+                particles[i] = new PSO_Particle(NNSize, Config.PSO_TYPE, dim);
             else
                 particles[i] = new PSO_Particle(
                                     NNSize, 
-                                    (Math.random() < Config.chargedPercent) ? Config.PsoType.QUANTUM : Config.PsoType.INTERTIA, 
+                                    (Math.random() < Config.CHARGE_PERCENT) ? Config.PsoType.QUANTUM : Config.PsoType.INTERTIA, 
                                     dim
                                 );
 

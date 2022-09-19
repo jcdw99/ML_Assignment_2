@@ -30,9 +30,9 @@ class PSO_Particle {
         this.DIM = dim;
 
         // control params of the form [w, c1, c2]
-        this.w = Config.w;
-        this.c1 = Config.c1;
-        this.c2 = Config.c2;
+        this.w = Config.W;
+        this.c1 = Config.C1;
+        this.c2 = Config.C2;
         this.position = new double[dim];
 
         for (int i = 0; i < this.position.length; i++)
@@ -88,7 +88,7 @@ class PSO_Particle {
         } else if (ptype == Config.PsoType.QUANTUM) {
                 for (int i = 0; i < this.velocity.length; i++) {
                     this.position[i] = gBestVec[i] +
-                            (r.nextGaussian() * Config.radius);
+                            (r.nextGaussian() * Config.RADIUS);
                 }
             }
         }

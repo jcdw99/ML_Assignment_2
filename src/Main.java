@@ -1,5 +1,5 @@
 public class Main {
     public static void main(String[] args) {
-        Driver.do3TrivialSwarm(Config.PsoType.QUANTUM);
+        Evaluator.do3TrivialSwarm(Config.PsoType.QUANTUM);
     }
 }

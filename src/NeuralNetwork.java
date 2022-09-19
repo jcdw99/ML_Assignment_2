@@ -215,6 +215,22 @@ public class NeuralNetwork implements Serializable {
         return maxIndex;
     }
 
+    /**
+     * Accept a collection of labeled test data, Runs the testData through the network 
+     * and determines final classification accuracy (%) as a number between [0,1]
+     * @param testData
+     * @return
+     */
+    public double ClassifyAccuracy(DataPoint[] testData) {
+        int correctCount = 0;
+        for (int i = 0; i < testData.length; i++) {
+            int classification = this.Classify(testData[i].inputVector);
+            if (testData[i].expectedOutputVector[classification] == 1.0)
+                correctCount += 1;
+        }
+        return ((double) (correctCount)) / testData.length;
+    }
+
 
     public void saveNet(String netName) {
         FileOutputStream fileOutputStream;
