@@ -31,14 +31,14 @@ public class Config {
     /*
      * VISUALIZER CONSTANTS
      */
-    public static final double BLACKNESS = 0.65;
+    public static final double BLACKNESS = 1;
 
     /*
      * EVALUATOR CONSTANTS
      */
-    public static final int BATCHSIZE = 100;
+    public static int BATCHSIZE = 100;
     public static final int WRITE_GRANULARITY = 100;
-    public static final int TRIALS = 3;
+    public static final int TRIALS = 20;
     // Iterations refers to swarm iterations. NN does (ITERATIONS * SWARMSIZE) backprop iterations
     public static final int ITERATIONS = 10_000;
 }

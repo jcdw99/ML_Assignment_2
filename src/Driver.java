@@ -242,7 +242,7 @@ public class Driver {
                 net = new NeuralNetwork(sizes, swarm.gBestVec);
                 v.draw(net, points[0].expectedOutputVector.length);
                 v.scatterPoints(points, 5);
-                v.addError(String.format("%.6f", swarm.gBestEval).replace(",", "."), iter + "", Score(net, points));
+                v.addError(String.format("%.6f", net.Cost(points)).replace(",", "."), iter + "", Score(net, points));
                 StdDraw.show();
                 StdDraw.pause(20);
             }

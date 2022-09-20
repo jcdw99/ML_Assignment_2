@@ -13,6 +13,10 @@ public class Evaluator {
     public static final String WHITE = "\u001B[1;37m";
 
 
+    /**
+     * Below we have swarm related evaluator functions. Each evaluator function defers to the respective run
+     * function, passing in the correct class and dataset information
+     */
     public static void do3TrivialSwarm(Config.PsoType type) {
         DataPoint[] points = Loader.loadPointsFromFile("../data/3classSimple.csv", 2, 3);
         int classes = 3;
@@ -20,13 +24,48 @@ public class Evaluator {
         runSwarm(points, sizes, "3Trivial", type);
     }
 
+    public static void doPinWheelSwarm(Config.PsoType type) {
+        DataPoint[] points = Loader.loadPointsFromFile("../data/pinwheel.csv", 2, 5);
+        int classes = 5;
+        int[] sizes = {2, 10, classes};
+        runSwarm(points, sizes, "Pinwheel", type);
+    }
 
+    public static void doSwirlSwarm(Config.PsoType type) {
+        DataPoint[] points = Loader.loadPointsFromFile("../data/swirl.csv", 2, 2);
+        int classes = 2;
+        int[] sizes = {2, 10, classes};
+        runSwarm(points, sizes, "Swirl", type);
+    }
+
+
+
+    /**
+     * Below we have NN related evaluator functions. Each evaluator function defers to the respective run
+     * function, passing in the correct class and dataset information
+     */
     public static void do3Trivial() {
         DataPoint[] points = Loader.loadPointsFromFile("../data/3classSimple.csv", 2, 3);
         int classes = 3;
         int[] sizes = {2, 10, classes};
         runNN(points, sizes, "3Trivial");
     }
+
+    public static void doPinWheel() {
+        DataPoint[] points = Loader.loadPointsFromFile("../data/pinwheel.csv", 2, 5);
+        int classes = 5;
+        int[] sizes = {2, 10, classes};
+        runNN(points, sizes, "Pinwheel");
+    }
+
+    public static void doSwirl() {
+        DataPoint[] points = Loader.loadPointsFromFile("../data/swirl.csv", 2, 2);
+        int classes = 2;
+        int[] sizes = {2, 10, classes};
+        runNN(points, sizes, "Swirl");
+    }
+
+
 
 
     public static void printClassificationAccuracy(NeuralNetwork net, DataPoint[] testSet) {
@@ -62,7 +101,9 @@ public class Evaluator {
             swarm.doUpdate(batch);
             // if this is a granule, write to output file
             if (iter > 0 && iter % Config.WRITE_GRANULARITY == 0) {
-                trialData[writeCount++] =  swarm.gBestEval;
+                // create a new neural net, to evaluate this accuracy and cost, on entire training set
+                NeuralNetwork net = new NeuralNetwork(sizes, swarm.gBestVec);
+                trialData[writeCount++] =  net.Cost(trainData);
                 if (writeCount % 10 == 0)
                     System.out.printf("\t%sIter: %s%d of %d\n", WHITE, BLUE, iter, Config.ITERATIONS);
             }
@@ -75,32 +116,74 @@ public class Evaluator {
         return results;
     }
 
+    /**
+     * To make the comparison between SGD and PSO based algorithms more fair, we allow <SwarmSize> NN's each using SGD to run during each trial.
+     * The best NN from this array is saved, and the performance recorded. Recall, the PSO training algorithms use a swarm of particles, each with its
+     * own underlying Neuralnetwork structure, if we keep iterations constant, then PSO based algorithms evaluate <SwarmSize>  more NN's than standard SGD.
+     * This is why we need to allow SGD to run for <Config.Trials> * <Config.SwarmSize> total trials, which is equivalent to running an array of <Config.Swarmsize>
+     * NN's per trial.
+     * @param trainData
+     * @param testData
+     * @param sizes
+     * @return
+     */
     public static double[][] runNNTrial(DataPoint[] trainData, DataPoint[] testData,  int[] sizes) {
         
-        // construct the swarm for this trial
-        NeuralNetwork n = new NeuralNetwork(sizes);
+        // construct the NN's for this trial
+        NeuralNetwork[] n = new NeuralNetwork[Config.SWARMSIZE];
 
-        double[] trialData = new double[(int)((Config.ITERATIONS * Config.SWARMSIZE) / (Config.WRITE_GRANULARITY * Config.SWARMSIZE)) - 1];
+        // initialize all neural networks
+        for (int i =0; i < n.length; i++) {
+            n[i] = new NeuralNetwork(sizes);
+        }
+
+        double[] trialData = new double[(int)((Config.ITERATIONS) / (Config.WRITE_GRANULARITY)) - 1];
         int writeCount = 0;
 
         // conduct the trial
-        for (int iter = 0; iter < Config.ITERATIONS * Config.SWARMSIZE; iter++) {
+        for (int iter = 0; iter < Config.ITERATIONS; iter++) {
 
             // get batch from training set
             DataPoint[] batch = Driver.getRandomBatch(trainData, Config.BATCHSIZE);
-            n.BackProp(batch, Config.LEARNRATE);
+
+            // backprop this data through each network in the array of networks
+            for (int i = 0; i < n.length; i++) {
+                n[i].BackProp(batch, Config.LEARNRATE);
+            }
 
             // if this is a granule, write to output file
-            if (iter > 0 && iter % (Config.WRITE_GRANULARITY * Config.SWARMSIZE) == 0) {
-                trialData[writeCount++] =  n.Cost(batch);
+            if (iter > 0 && iter % (Config.WRITE_GRANULARITY) == 0) {
+
+                // find best NN in array, and write its cost to file
+                double minCost = n[0].Cost(batch);
+                for (int i = 1; i < n.length; i++) {
+                    // check cost of this network
+                    double thisNetCost = n[i].Cost(batch);
+                    // if the cost is lower than the best found, update best found
+                    if (thisNetCost < minCost)
+                        minCost = thisNetCost;
+                }
+                
+                // write lowest cost in array of networks, to file
+                trialData[writeCount++] =  minCost;
                 if (writeCount % 10 == 0)
-                    System.out.printf("\t%sIter: %s%d of %d\n", WHITE, BLUE, iter, Config.ITERATIONS * Config.SWARMSIZE);
+                    System.out.printf("\t%sIter: %s%d of %d\n", WHITE, BLUE, iter, Config.ITERATIONS);
+            }
+        }
+        // lets go find the network with the lowest cost, to use in final classification accuracy
+        double minCost = n[0].Cost(testData);
+        int minDex = 0;
+        for (int i = 1; i < n.length; i++) {
+            double thisNetCost = n[i].Cost(testData);
+            if (thisNetCost < minCost) {
+                minCost = thisNetCost;
+                minDex = i;
             }
         }
 
         // generate NN from gbest configuration, to obtain final classification accuracy on test set
-        double[][] results = {trialData, {n.ClassifyAccuracy(testData)} };
-        printClassificationAccuracy(n, testData);
+        double[][] results = {trialData, {n[minDex].ClassifyAccuracy(testData)} };
+        printClassificationAccuracy(n[minDex], testData);
         return results;
     }
 

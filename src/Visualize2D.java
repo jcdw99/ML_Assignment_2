@@ -16,6 +16,7 @@ public class Visualize2D {
         this.pixSize = canvasWidth / 100;
         this.lb = lb;
         this.ub = ub;
+        this.blackness = Config.BLACKNESS;
         if (this.pixSize % 2 != 0)
             this.pixSize += 1;
         initCanvas();
@@ -29,6 +30,7 @@ public class Visualize2D {
         if (pixSize % 2 != 0)
             pixSize += 1;
         this.pixSize = pixSize;
+        this.blackness = blackness;
         initCanvas();
     }
 
