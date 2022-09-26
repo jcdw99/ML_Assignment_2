@@ -38,7 +38,7 @@ public class Driver {
     public static void doSwirlSwarm(Config.PsoType type) {
         Config.PSO_TYPE = type;
         int classes = 2;
-        int[] sizes = {2, 10, classes};
+        int[] sizes = {2, 5,5, classes};
         String targetFile = "../data/swirl.csv";
         Visualize2D v = new Visualize2D(800, 800, 2, -40, 40, Config.BLACKNESS);
         DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
@@ -70,7 +70,7 @@ public class Driver {
     public static void doCircleSwarm(Config.PsoType type) {     
         Config.PSO_TYPE = type;   
         int classes = 2;
-        int[] sizes = {2, 10, classes};
+        int[] sizes = {2, 15, classes};
         String targetFile = "../data/circle.csv";
         Visualize2D v = new Visualize2D(800, 800, 2, 0, 2, Config.BLACKNESS);
         DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
@@ -91,7 +91,7 @@ public class Driver {
 
     public static void doPinWheel() {
         int classes = 5;
-        int[] sizes = {2, 10,10,10,10, classes};
+        int[] sizes = {2, 7,7, classes};
         String targetFile = "../data/pinwheel.csv";
         Visualize2D v = new Visualize2D(800, 800, 2, -29, 29, Config.BLACKNESS);
         NeuralNetwork net = new NeuralNetwork(sizes);
@@ -101,7 +101,7 @@ public class Driver {
 
     public static void doSwirl() {
         int classes = 2;
-        int[] sizes = {2, 20, classes};
+        int[] sizes = {2, 7,7,7, classes};
         String targetFile = "../data/swirl.csv";
         Visualize2D v = new Visualize2D(800, 800, 2, -40, 40, Config.BLACKNESS);
         NeuralNetwork net = new NeuralNetwork(sizes);
@@ -111,7 +111,7 @@ public class Driver {
 
     public static void doSwirlNoise() {
         int classes = 2;
-        int[] sizes = {2, 100, classes};
+        int[] sizes = {2, 7,7,7, classes};
         String targetFile = "../data/swirlNoise.csv";
         Visualize2D v = new Visualize2D(800, 800, 2, -40, 40, Config.BLACKNESS);
         NeuralNetwork net = new NeuralNetwork(sizes);
@@ -131,7 +131,7 @@ public class Driver {
 
     public static void do6Trival() {
         int classes = 6;
-        int[] sizes = {2, 10, classes};
+        int[] sizes = {2, 6,6, classes};
         String targetFile = "../data/6classSimple.csv";
         Visualize2D v = new Visualize2D(800, 800, 2, 0, 6, Config.BLACKNESS);
         NeuralNetwork net = new NeuralNetwork(sizes);
@@ -139,10 +139,22 @@ public class Driver {
         run(net, v, points, "6Trivial");
     }
 
+    public static void do6TrivialSwarm(Config.PsoType type) {
+        Config.PSO_TYPE = type;
+        int classes = 6;
+        int[] sizes = {2, 10, classes};
+        String targetFile = "../data/6classSimple.csv";
+        Visualize2D v = new Visualize2D(800, 800, 2, 0, 6, Config.BLACKNESS);
+        DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
+        PSO_Swarm swarm = new PSO_Swarm(Config.SWARMSIZE, sizes);
+        runSwarm(swarm, v, points, sizes, "6TrivialSwarm");
+    }
+
+
 
     public static void do3Trivial() {
         int classes = 3;
-        int[] sizes = {2, 4, classes};
+        int[] sizes = {2, 7,7, classes};
         String targetFile = "../data/3classSimple.csv";
         Visualize2D v = new Visualize2D(800, 800, 4, 0, 3, Config.BLACKNESS);
         NeuralNetwork net = new NeuralNetwork(sizes);
@@ -162,7 +174,7 @@ public class Driver {
 
     public static void doCircle() {
         int classes = 2;
-        int[] sizes = {2, 10, classes};
+        int[] sizes = {2, 7,7, classes};
         String targetFile = "../data/circle.csv";
         Visualize2D v = new Visualize2D(800, 800, 4, 0, 2, Config.BLACKNESS);
         NeuralNetwork net = new NeuralNetwork(sizes);
@@ -192,13 +204,25 @@ public class Driver {
 
     public static void doS() {
         int classes = 2;
-        int[] sizes = {2, 7,7,7, classes};
+        int[] sizes = {2, 10,10,10, classes};
         String targetFile = "../data/s.csv";
         Visualize2D v = new Visualize2D(800, 800, 4, 0, 2, Config.BLACKNESS);
         NeuralNetwork net = new NeuralNetwork(sizes);
         DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
         run(net, v, points, "sBig");
     }
+
+    public static void doSSwarm(Config.PsoType type) {
+        Config.PSO_TYPE = type;
+        int classes = 2;
+        int[] sizes = {2, 10, classes};
+        String targetFile = "../data/S.csv";
+        Visualize2D v = new Visualize2D(800, 800, 2, 0, 2, Config.BLACKNESS);
+        DataPoint[] points = Loader.loadPointsFromFile(targetFile, 2, classes);
+        PSO_Swarm swarm = new PSO_Swarm(Config.SWARMSIZE, sizes);
+        runSwarm(swarm, v, points, sizes, "sSwarm");
+    }
+
 
     public static String Score(NeuralNetwork net, DataPoint[] points) {
         int correctCount = 0;
@@ -233,7 +257,7 @@ public class Driver {
 
     public static void runSwarm(PSO_Swarm swarm, Visualize2D v, DataPoint[] points, int[] sizes, String saveNetName) {
         NeuralNetwork net = null;
-        for (int iter = 0; iter < 50000; iter++) {
+        for (int iter = 0; iter < 3000000; iter++) {
             DataPoint[] batch = getRandomBatch(points, Config.BATCHSIZE);
             swarm.doUpdate(batch);
             if (iter > 0 && iter % 100 == 0) {

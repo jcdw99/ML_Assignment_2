@@ -40,6 +40,7 @@ public class Visualize2D {
         StdDraw.setYscale(0, this.canvasHeight);
         StdDraw.filledCircle(0, 0, 30);
         StdDraw.setPenColor(StdDraw.BLACK);
+
         StdDraw.filledRectangle(this.canvasWidth/2, this.canvasHeight/2, this.canvasWidth / 2, this.canvasHeight / 2);
         StdDraw.enableDoubleBuffering();
     }
